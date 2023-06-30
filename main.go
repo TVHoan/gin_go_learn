@@ -47,7 +47,7 @@ func main() {
 	r.PUT("/people/:id", UpdatePerson)
 	r.DELETE("/people/:id", DeletePerson)
 
-	r.Run(":8009")
+	r.Run(":80")
 }
 
 func DeletePerson(c *gin.Context) {
