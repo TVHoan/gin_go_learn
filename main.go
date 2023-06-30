@@ -30,7 +30,7 @@ func main() {
 	// db, err = gorm.Open("sqlite3", "./gorm.db")
 	// db, _ = gorm.Open("mysql", "root:1@tcp(127.0.0.1:3306)/database?charset=utf8mb4&parseTime=True&loc=Local")
 	db, err := gorm.Open(postgres.New(postgres.Config{
-		DSN: "host=dpg-cif4npp5rnujc4p57seg-a user=root password=nCWzlSEHnHroRmNBcN3l4q5TgEqVdFxh dbname=gorm_ny4t port=5432 sslmode=disable TimeZone=Asia/Shanghai", // data source name, refer https://github.com/jackc/pgx
+		DSN: "host=dpg-cif4npp5rnujc4p57seg-a.singapore-postgres.render.com user=root password=nCWzlSEHnHroRmNBcN3l4q5TgEqVdFxh dbname=gorm_ny4t port=5432 sslmode=disable TimeZone=Asia/Shanghai", // data source name, refer https://github.com/jackc/pgx
 		PreferSimpleProtocol: true, // disables implicit prepared statement usage. By default pgx automatically uses the extended protocol
 	  }), &gorm.Config{})
 	if err != nil {
