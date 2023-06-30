@@ -4,17 +4,12 @@ package main
 // both are included here for reference
 import (
 	"fmt"
-
 	"github.com/gin-gonic/gin"
-	_ "github.com/go-sql-driver/mysql"
-	// "github.com/jinzhu/gorm"
-	_ "github.com/jinzhu/gorm/dialects/sqlite"
+	//_ "gorm.io/driver/mysql"
 	"gorm.io/driver/postgres"
+	//_ "gorm.io/driver/sqlite"
 	"gorm.io/gorm"
 )
-
-var db *gorm.DB
-var err error
 
 type Person struct {
 	ID        uint   `json:"id"`
@@ -23,21 +18,22 @@ type Person struct {
 	City      string `json:"city"`
 }
 
+func database() *gorm.DB {
+	//db *gorm.DB
+	//err error
+	dsn := "host=dpg-cif4npp5rnujc4p57seg-a.singapore-postgres.render.com user=root password=nCWzlSEHnHroRmNBcN3l4q5TgEqVdFxh dbname=gorm_ny4t port=5432 sslmode=disable TimeZone=Asia/Shanghai"
+	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
+	if err != nil {
+		fmt.Println(err)
+	}
+	return db
+}
 func main() {
-
 	// NOTE: See we're using = to assign the global var
 	//         	instead of := which would assign it only in this function
 	// db, err = gorm.Open("sqlite3", "./gorm.db")
 	// db, _ = gorm.Open("mysql", "root:1@tcp(127.0.0.1:3306)/database?charset=utf8mb4&parseTime=True&loc=Local")
-	db, err := gorm.Open(postgres.New(postgres.Config{
-		DSN: "host=dpg-cif4npp5rnujc4p57seg-a.singapore-postgres.render.com user=root password=nCWzlSEHnHroRmNBcN3l4q5TgEqVdFxh dbname=gorm_ny4t port=5432 sslmode=disable TimeZone=Asia/Shanghai", // data source name, refer https://github.com/jackc/pgx
-		PreferSimpleProtocol: true, // disables implicit prepared statement usage. By default pgx automatically uses the extended protocol
-	  }), &gorm.Config{})
-	if err != nil {
-		fmt.Println(err)
-	}
-	// defer db.Close()
-
+	db := database()
 	db.AutoMigrate(&Person{})
 
 	r := gin.Default()
@@ -47,10 +43,11 @@ func main() {
 	r.PUT("/people/:id", UpdatePerson)
 	r.DELETE("/people/:id", DeletePerson)
 
-	r.Run(":8080")
+	r.Run(":8005")
 }
 
 func DeletePerson(c *gin.Context) {
+	db := database()
 	id := c.Params.ByName("id")
 	var person Person
 	d := db.Where("id = ?", id).Delete(&person)
@@ -59,7 +56,7 @@ func DeletePerson(c *gin.Context) {
 }
 
 func UpdatePerson(c *gin.Context) {
-
+	db := database()
 	var person Person
 	id := c.Params.ByName("id")
 
@@ -75,15 +72,18 @@ func UpdatePerson(c *gin.Context) {
 }
 
 func CreatePerson(c *gin.Context) {
-
+	db := database()
 	var person Person
 	c.BindJSON(&person)
 
-	db.Create(&person)
+	if result := db.Create(&person).Error; result != nil {
+		c.JSON(400, result.Error)
+	}
 	c.JSON(200, person)
 }
 
 func GetPerson(c *gin.Context) {
+	db := database()
 	id := c.Params.ByName("id")
 	var person Person
 	if err := db.Where("id = ?", id).First(&person).Error; err != nil {
@@ -94,7 +94,8 @@ func GetPerson(c *gin.Context) {
 	}
 }
 func GetPeople(c *gin.Context) {
-	var people []Person
+	db := database()
+	var people Person
 	if err := db.Find(&people).Error; err != nil {
 		c.AbortWithStatus(404)
 		fmt.Println(err)
