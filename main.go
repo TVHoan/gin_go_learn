@@ -95,7 +95,7 @@ func GetPerson(c *gin.Context) {
 }
 func GetPeople(c *gin.Context) {
 	db := database()
-	var people Person
+	var people []Person
 	if err := db.Find(&people).Error; err != nil {
 		c.AbortWithStatus(404)
 		fmt.Println(err)
