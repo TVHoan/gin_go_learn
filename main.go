@@ -21,7 +21,7 @@ type Person struct {
 func database() *gorm.DB {
 	//db *gorm.DB
 	//err error
-	dsn := "host=dpg-cif4npp5rnujc4p57seg-a.singapore-postgres.render.com user=root password=nCWzlSEHnHroRmNBcN3l4q5TgEqVdFxh dbname=gorm_ny4t port=5432 sslmode=disable TimeZone=Asia/Shanghai"
+	dsn := "host=dpg-cif4npp5rnujc4p57seg-a.singapore-postgres.render.com user=root password=nCWzlSEHnHroRmNBcN3l4q5TgEqVdFxh dbname=gorm_ny4t port=5432 TimeZone=Asia/Shanghai"
 	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
 	if err != nil {
 		fmt.Println(err)
