@@ -4,15 +4,14 @@ package main
 // both are included here for reference
 import (
 	"fmt"
+	"gin/controller/auth"
+	"gin/model"
 
 	"github.com/gin-gonic/gin"
 
-	//_ "gorm.io/driver/mysql"
-	"gorm.io/driver/postgres"
+	"gin/database"
 	//_ "gorm.io/driver/sqlite"
 	"gin/middleware"
-
-	"gorm.io/gorm"
 )
 
 type Person struct {
@@ -22,22 +21,14 @@ type Person struct {
 	City      string `json:"city"`
 }
 
-func database() *gorm.DB {
-	//db *gorm.DB
-	//err error
-	dsn := "host=localhost user=postgres password=1 dbname=gorm port=5432 TimeZone=Asia/Shanghai"
-	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
-	if err != nil {
-		fmt.Println(err)
-	}
-	return db
-}
 func main() {
-	db := database()
+	db := database.Database()
 	db.AutoMigrate(&Person{})
+	db.AutoMigrate(&model.User{})
 
 	r := gin.New()
 	r.Use(middleware.Authorization())
+	r.POST("/login/", auth.Login)
 	r.GET("/people/", GetPeople)
 	r.GET("/people/:id", GetPerson)
 	r.POST("/people", CreatePerson)
@@ -48,7 +39,7 @@ func main() {
 }
 
 func DeletePerson(c *gin.Context) {
-	db := database()
+	db := database.Database()
 	id := c.Params.ByName("id")
 	var person Person
 	d := db.Where("id = ?", id).Delete(&person)
@@ -57,7 +48,7 @@ func DeletePerson(c *gin.Context) {
 }
 
 func UpdatePerson(c *gin.Context) {
-	db := database()
+	db := database.Database()
 	var person Person
 	id := c.Params.ByName("id")
 
@@ -73,7 +64,7 @@ func UpdatePerson(c *gin.Context) {
 }
 
 func CreatePerson(c *gin.Context) {
-	db := database()
+	db := database.Database()
 	var person Person
 	c.BindJSON(&person)
 
@@ -84,7 +75,7 @@ func CreatePerson(c *gin.Context) {
 }
 
 func GetPerson(c *gin.Context) {
-	db := database()
+	db := database.Database()
 	id := c.Params.ByName("id")
 	var person Person
 	if err := db.Where("id = ?", id).First(&person).Error; err != nil {
@@ -95,7 +86,7 @@ func GetPerson(c *gin.Context) {
 	}
 }
 func GetPeople(c *gin.Context) {
-	db := database()
+	db := database.Database()
 	var people []Person
 	if err := db.Find(&people).Error; err != nil {
 		c.AbortWithStatus(404)
