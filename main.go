@@ -4,10 +4,14 @@ package main
 // both are included here for reference
 import (
 	"fmt"
+
 	"github.com/gin-gonic/gin"
+
 	//_ "gorm.io/driver/mysql"
 	"gorm.io/driver/postgres"
 	//_ "gorm.io/driver/sqlite"
+	"gin/middleware"
+
 	"gorm.io/gorm"
 )
 
@@ -32,7 +36,8 @@ func main() {
 	db := database()
 	db.AutoMigrate(&Person{})
 
-	r := gin.Default()
+	r := gin.New()
+	r.Use(middleware.Authorization())
 	r.GET("/people/", GetPeople)
 	r.GET("/people/:id", GetPerson)
 	r.POST("/people", CreatePerson)
