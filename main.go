@@ -5,11 +5,13 @@ package main
 import (
 	"fmt"
 	"gin/controller/auth"
-	"gin/model"
-
-	"github.com/gin-gonic/gin"
-
 	"gin/database"
+	"gin/model"
+	"github.com/gin-gonic/gin"
+	"github.com/joho/godotenv"
+	"log"
+	"os"
+
 	//_ "gorm.io/driver/sqlite"
 	"gin/middleware"
 )
@@ -22,14 +24,19 @@ type Person struct {
 }
 
 func main() {
+	err := godotenv.Load()
+	if err != nil {
+		log.Fatal("Error loading .env file")
+	}
 	db := database.Database()
 	db.AutoMigrate(&Person{})
 	db.AutoMigrate(&model.User{})
-
+	secretKey := os.Getenv("SECRET")
+	println(secretKey)
 	r := gin.New()
-	r.Use(middleware.Authorization())
 	r.POST("/login/", auth.Login)
-	r.GET("/people/", GetPeople)
+	r.POST("/register/", auth.Register)
+	r.GET("/people/", middleware.Authorization, GetPeople)
 	r.GET("/people/:id", GetPerson)
 	r.POST("/people", CreatePerson)
 	r.PUT("/people/:id", UpdatePerson)
